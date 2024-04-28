@@ -49,16 +49,14 @@ public class AuthController {
 	ResponseEntity<String> signUp(@RequestBody SignUpRequest signUpRequest) {
 		ResponseEntity<String> responseEntity = null;
 		try {
-			Member memberToSave = memberMapper.signUpToMemberEntity(signUpRequest);
+			Member memberToSave = memberMapper.signUpModelToMemberEntity(signUpRequest);
 			if (!memberService.existByUsername(memberToSave.getUsername())) {
-				if (isValidRole(signUpRequest) && doesExistInDB(signUpRequest)) {
-					Member savedMember = memberService.saveMember(memberToSave);
-					boolean fetchedMember = memberService.existByUsername(savedMember.getUsername());
-					if (fetchedMember) {
-						responseEntity = new ResponseEntity<>(savedMember.getFullName(), HttpStatusCode.valueOf(200));
-					} else {
-						responseEntity = new ResponseEntity<>("User Not Saved", HttpStatusCode.valueOf(500));
-					}
+				Member savedMember = memberService.saveMember(memberToSave);
+				boolean fetchedMember = memberService.existByUsername(savedMember.getUsername());
+				if (fetchedMember) {
+					responseEntity = new ResponseEntity<>(savedMember.getFullName(), HttpStatusCode.valueOf(200));
+				} else {
+					responseEntity = new ResponseEntity<>("User Not Saved", HttpStatusCode.valueOf(500));
 				}
 			} else {
 				responseEntity = new ResponseEntity<>(
@@ -72,15 +70,12 @@ public class AuthController {
 		return responseEntity;
 	}
 
-	private boolean doesExistInDB(SignUpRequest signUpRequest) {
-		return signUpRequest.getAuthorities().stream().map(Authority::getRole).allMatch(role -> {
-			if (authorityService.existsByRole(role)) {
-				return true;
-			} else {
-				authorityService.save(new Authority(role));
-				return authorityService.existsByRole(role);
-			}
-		});
+	private static boolean isValidRole(SignUpRequest signUpRequest) {
+		Set<Role> validRoles = EnumSet.of(Role.ADMIN, Role.USER);
+		return signUpRequest.getAuthorities() != null && signUpRequest.getAuthorities()
+				.stream()
+				.map(Authority::getRole)
+				.allMatch(validRoles::contains);
 	}
 
 	@PostMapping("/signin")
@@ -108,14 +103,6 @@ public class AuthController {
 		securityContextHolderStrategy.setContext(context);
 		securityContextRepository.saveContext(context, request, response);
 		return authentication;
-	}
-
-	private static boolean isValidRole(SignUpRequest signUpRequest) {
-		Set<Role> validRoles = EnumSet.of(Role.ADMIN, Role.USER);
-		return signUpRequest.getAuthorities() != null && signUpRequest.getAuthorities()
-				.stream()
-				.map(Authority::getRole)
-				.allMatch(validRoles::contains);
 	}
 
 }

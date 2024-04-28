@@ -17,7 +17,7 @@ public interface MemberMapper {
 
 	@Mapping(target = "fullName", expression = "java(getFullName(signUpRequest))")
 	@Mapping(target = "authorities", expression = "java(mapAuthorities(signUpRequest))")
-	Member signUpToMemberEntity(SignUpRequest signUpRequest);
+	Member signUpModelToMemberEntity(SignUpRequest signUpRequest);
 
 	default String getFullName(SignUpRequest signUpRequest) {
 		return signUpRequest.getFirstName() + " " + signUpRequest.getLastName();

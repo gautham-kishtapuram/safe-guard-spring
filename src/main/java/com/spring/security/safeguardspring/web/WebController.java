@@ -19,7 +19,7 @@ public class WebController {
 		return ("<h1>Welcome</h1>");
 	}
 
-	@GetMapping("/getAuth")
+	@GetMapping("/getAuthManager")
 	public ResponseEntity<?> getAuthenticationManager() {
 
 		return new ResponseEntity<>(SecurityContextHolder.getContext(), HttpStatus.OK);
