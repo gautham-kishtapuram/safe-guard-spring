@@ -1,0 +1,19 @@
+version: '3.0'
+services:
+  safeguards:
+    build: ./
+    image: safe-guard-spring
+    ports:
+     - '8090:8080'
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: Gautham
+      POSTGRES_PASSWORD: Root@123
+    ports:
+      - "5432:5432"
+    restart: always
