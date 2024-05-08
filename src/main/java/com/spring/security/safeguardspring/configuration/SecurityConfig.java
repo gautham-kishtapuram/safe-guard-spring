@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -21,12 +22,13 @@ public class SecurityConfig {
 
 	private final @NonNull MemberDetailsService userDetailsService;
 	private final @NonNull AuthorizationExceptionHandler unauthorizedHandler;
+	private final @NonNull JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http.csrf(AbstractHttpConfigurer::disable)
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/getAuth")
 						.authenticated()
 						.requestMatchers("/admin")
@@ -35,6 +37,7 @@ public class SecurityConfig {
 						.hasAuthority("USER")
 						.requestMatchers("/**")
 						.permitAll())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 
 	}
@@ -51,7 +54,7 @@ public class SecurityConfig {
 	public AuthenticationManager authenticationManager(
 			@Qualifier("daoAuthenticationProvider") AuthenticationProvider authenticationProvider) {
 		ProviderManager providerManager = new ProviderManager(authenticationProvider);
-//		providerManager.setEraseCredentialsAfterAuthentication(false);
+		//		providerManager.setEraseCredentialsAfterAuthentication(false);
 		return providerManager;
 	}
 

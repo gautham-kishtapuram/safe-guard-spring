@@ -1,11 +1,13 @@
 package com.spring.security.safeguardspring.web;
 
+import com.spring.security.safeguardspring.configuration.JwtUtil;
+import com.spring.security.safeguardspring.configuration.MemberDetailsService;
 import com.spring.security.safeguardspring.entity.Authority;
 import com.spring.security.safeguardspring.entity.Member;
+import com.spring.security.safeguardspring.model.PreAuthUserDetails;
 import com.spring.security.safeguardspring.model.Role;
 import com.spring.security.safeguardspring.model.SignInRequest;
 import com.spring.security.safeguardspring.model.SignUpRequest;
-import com.spring.security.safeguardspring.service.AuthorityService;
 import com.spring.security.safeguardspring.service.MemberService;
 import com.spring.security.safeguardspring.service.mapper.MemberMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +42,9 @@ public class AuthController {
 
 	private final @NonNull MemberService memberService;
 	private final @NonNull MemberMapper memberMapper;
-	private final @NonNull AuthorityService authorityService;
+	private final @NonNull MemberDetailsService memberDetailsService;
+	private final @NonNull JwtUtil jwtUtil;
+
 	private final @NonNull AuthenticationManager authenticationManager;
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 	private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -78,12 +82,14 @@ public class AuthController {
 				.allMatch(validRoles::contains);
 	}
 
-	@PostMapping("/signin")
-	ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest, HttpServletRequest request,
+	@PostMapping("/signin-memory")
+	ResponseEntity<?> signInOnCache(@RequestBody SignInRequest signInRequest, HttpServletRequest request,
 			HttpServletResponse response) {
 		ResponseEntity<?> responseEntity = null;
 		try {
-			Authentication authentication = authentication(signInRequest, request, response);
+
+			Authentication authentication = authentication(signInRequest, request, response, true);
+
 			responseEntity = new ResponseEntity<>(authentication, HttpStatus.OK);
 		} catch (Exception exception) {
 			log.error("Error {}", exception);
@@ -92,16 +98,34 @@ public class AuthController {
 		return responseEntity;
 	}
 
-	private Authentication authentication(SignInRequest signInRequest, HttpServletRequest request,
+	@PostMapping("/signin")
+	ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest, HttpServletRequest request,
 			HttpServletResponse response) {
+		ResponseEntity<?> responseEntity = null;
+		try {
+
+			Authentication authentication = authentication(signInRequest, request, response, false);
+			PreAuthUserDetails preAuthUserDetails = (PreAuthUserDetails) authentication.getPrincipal();
+			return new ResponseEntity<>(jwtUtil.generateAccessToken(preAuthUserDetails), HttpStatus.OK);
+
+		} catch (Exception exception) {
+			log.error("Error {}", exception);
+			responseEntity = new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+		} return responseEntity;
+	}
+
+	private Authentication authentication(SignInRequest signInRequest, HttpServletRequest request,
+			HttpServletResponse response, boolean toCacheAuthentication) {
 		UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(
 				signInRequest.getUsername(), signInRequest.getPassword());
 		Authentication authentication = authenticationManager.authenticate(token);
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		SecurityContext context = SecurityContextHolder.getContext();
-		context.setAuthentication(authentication);
-		securityContextHolderStrategy.setContext(context);
-		securityContextRepository.saveContext(context, request, response);
+		if (toCacheAuthentication) {
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			SecurityContext context = SecurityContextHolder.getContext();
+			context.setAuthentication(authentication);
+			securityContextHolderStrategy.setContext(context);
+				securityContextRepository.saveContext(context, request, response);
+		}
 		return authentication;
 	}
 
