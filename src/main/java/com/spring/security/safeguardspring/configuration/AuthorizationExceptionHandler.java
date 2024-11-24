@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This get invoked, when the user is not fully authorized and tries to access Endpoints beyond his authorized scope
+ * This gets invoked, when the user is not fully authorized and tries to access Endpoints beyond his authorized scope
  */
 @Component
 public class AuthorizationExceptionHandler implements AuthenticationEntryPoint {

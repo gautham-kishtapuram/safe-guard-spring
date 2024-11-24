@@ -21,7 +21,6 @@ public class WebController {
 
 	@GetMapping("/getAuthManager")
 	public ResponseEntity<?> getAuthenticationManager() {
-
 		return new ResponseEntity<>(SecurityContextHolder.getContext(), HttpStatus.OK);
 	}
 

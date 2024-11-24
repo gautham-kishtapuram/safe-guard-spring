@@ -74,14 +74,6 @@ public class AuthController {
 		return responseEntity;
 	}
 
-	private static boolean isValidRole(SignUpRequest signUpRequest) {
-		Set<Role> validRoles = EnumSet.of(Role.ADMIN, Role.USER);
-		return signUpRequest.getAuthorities() != null && signUpRequest.getAuthorities()
-				.stream()
-				.map(Authority::getRole)
-				.allMatch(validRoles::contains);
-	}
-
 	@PostMapping("/signin-memory")
 	ResponseEntity<?> signInOnCache(@RequestBody SignInRequest signInRequest, HttpServletRequest request,
 			HttpServletResponse response) {

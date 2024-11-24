@@ -1,0 +1,32 @@
+jwt:
+    expiration: 50000
+    header: Authorization
+    refresh_expiration: 50000
+    secret: L8hHXsaQOUjk5rg7XPGv4eL36anlCrkMz8CJ0i/8E/0=
+    token:
+        head: Bearer
+logging:
+    level:
+        org:
+            springframework: INFO
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: Root@123
+        url: jdbc:postgresql://postgres:5432/users
+        username: Gautham
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        defer-datasource-initialization: true
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                format_sql: true
+        show-sql: true
+    sql:
+        init:
+            mode: always
+    threads:
+        virtual:
+            enabled: false
