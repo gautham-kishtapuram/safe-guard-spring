@@ -28,12 +28,11 @@ jobs:
     needs: build
     runs-on: [aws-ec2]
     steps:
-      # - name: Install Docker
-      #   run: |
-      #       sudo apt-get update
-      #       sudo apt-get install -y docker.io
-      #       sudo systemctl start docker
-      #       sudo systemctl enable docker
+      - name: Clone Github Repository
+        run: |
+            sudo apt install git
+            git clone https://github.com/gautham-kishtapuram/safe-guard-spring.git
+            cd safe-guard-spring
 
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
