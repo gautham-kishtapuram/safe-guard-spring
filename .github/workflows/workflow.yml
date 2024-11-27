@@ -30,8 +30,8 @@ jobs:
     steps:
       - name: Clone Github Repository
         run: |
-            sudo apt install git
-            git clone https://github.com/gautham-kishtapuram/safe-guard-spring.git
+            # sudo apt install git
+            # git clone https://github.com/gautham-kishtapuram/safe-guard-spring.git
             pwd
             cd safe-guard-spring
             pwd
